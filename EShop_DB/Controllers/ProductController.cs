@@ -1,5 +1,6 @@
 using EShop_DB.Data;
 using EShop_DB.Models;
+using EShop_DB.Models.MainModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShop_DB.Controllers;
@@ -64,12 +65,10 @@ public class ProductController : Controller
         }
 
         result.ProductId = product.ProductId;
-        result.ImageURL = product.ImageURL;
+        result.ImageUrl = product.ImageUrl;
         result.Name = product.Name;
         result.Description = product.Description;
         result.PricePerUnit = product.PricePerUnit;
-        result.WholesalePricePerUnit = product.WholesalePricePerUnit;
-        result.WholesaleQuantity = product.WholesaleQuantity;
         result.InStock = product.InStock;
         result.WeightInGrams = product.WeightInGrams;
 

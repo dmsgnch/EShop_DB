@@ -1,5 +1,6 @@
 using EShop_DB.Data;
 using EShop_DB.Models;
+using EShop_DB.Models.MainModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShop_DB.Controllers;
@@ -65,7 +66,6 @@ public class UserController : Controller
         result.Name = user.Name;
         result.Email = user.Email;
         result.Password = user.Password;
-        result.AccountType = user.AccountType;
 
         _context.Users.Update(result);
         _context.SaveChanges();

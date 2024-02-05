@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string connection = builder.Configuration.GetConnectionString("WebApiDatabase") ?? 
+string connection = builder.Configuration.GetConnectionString("WebApiDatabase"/*"qlConnection"*/) ?? 
                     throw new Exception("There are no any connection string with the same name \"DefaultConnection\"");
 
 builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlite(connection));
