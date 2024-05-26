@@ -1,67 +1,73 @@
+using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using EShop_DB.Models;
 using EShop_DB.Models.MainModels;
+using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShop_DB.Controllers;
 
-[Route("product")]
-[ApiController]
-public class ProductController : Controller
+[ApiController, Route("product")]
+public class ProductController : ControllerBase
 {
-    private readonly ApplicationContext _context;
+    private readonly ApplicationDbContext _dbContext;
+    private readonly string _entity = "Product";
 
-    public ProductController(ApplicationContext context)
+    public ProductController(ApplicationDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
-    [Route("add")]
-    [HttpPost]
+    [HttpPost, Route(ApiRoutes.Universal.Create)]
     public IActionResult AddProduct([FromBody] Product product)
     {
-        if (_context.Products.Any(p => p.Name.Equals(product.Name)))
+        if (_dbContext.Products.Any(p => p.Name.Equals(product.Name) && p.SellerId.Equals(product.SellerId)))
         {
-            return BadRequest("Product with the same name is already exist");
+            return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
         }
 
-        //Check, that guid is exist
-        if (product.ProductId.Equals(Guid.Empty)) product.ProductId = Guid.NewGuid();
+        if (!product.ProductId.Equals(Guid.Empty))
+        {
+            if (_dbContext.Products.Any(p => p.ProductId.Equals(product.ProductId)))
+            {
+                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, product.ProductId));
+            }
+        }
+        else
+        {
+            product.ProductId = Guid.NewGuid();
+        }
 
-        _context.Products.Add(product);
-        _context.SaveChanges();
+        _dbContext.Products.Add(product);
+        _dbContext.SaveChanges();
 
         return Ok();
     }
 
-    [Route("delete/{id:Guid}")]
-    [HttpDelete]
+    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
     public IActionResult DeleteProduct([FromRoute] Guid id)
     {
-        var result =
-            _context.Products.FirstOrDefault(p =>
-                p.ProductId.ToString().ToLower().Equals(id.ToString().ToLower()));
+        var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest("Product was not found");
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
         }
 
-        _context.Products.Remove(result);
-        _context.SaveChanges();
+        _dbContext.Products.Remove(result);
+        _dbContext.SaveChanges();
 
         return Ok();
     }
 
-    [Route("update")]
-    [HttpPut]
+    [HttpPut, Route(ApiRoutes.Universal.Update)]
     public IActionResult UpdateProduct([FromBody] Product product)
     {
-        var result = _context.Products.FirstOrDefault(p => p.ProductId.Equals(product.ProductId));
+        var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(product.ProductId));
 
         if (result is null)
         {
-            return BadRequest("Product was not found");
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, product.ProductId));
         }
 
         result.ProductId = product.ProductId;
@@ -69,35 +75,38 @@ public class ProductController : Controller
         result.Name = product.Name;
         result.Description = product.Description;
         result.PricePerUnit = product.PricePerUnit;
-        result.InStock = product.InStock;
         result.WeightInGrams = product.WeightInGrams;
+        result.InStock = product.InStock;
 
-        _context.Products.Update(result);
-        _context.SaveChanges();
+        result.SellerId = product.SellerId;
+        result.Seller = product.Seller;
+
+        result.OrderItems = product.OrderItems;
+
+        _dbContext.Products.Update(result);
+        _dbContext.SaveChanges();
 
         return Ok();
     }
 
-    [Route("getById")]
-    [HttpGet]
+    [HttpGet, Route(ApiRoutes.Universal.GetById)]
     public IActionResult GetProductById([FromRoute] Guid id)
     {
-        var result = _context.Products.FirstOrDefault(p => p.ProductId.Equals(id));
+        var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest("Product was not found");
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
         }
 
         return Ok(result);
     }
 
-    [Route("getAll")]
-    [HttpGet]
+    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
     public IActionResult GetAllProducts()
     {
-        List<Product> foundProduct = _context.Products.ToList();
-
-        return Ok(foundProduct);
+        List<Product> result = _dbContext.Products.ToList();
+        
+        return Ok(result);
     }
 }

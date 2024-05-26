@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 string connection = builder.Configuration.GetConnectionString("WebApiDatabase"/*"qlConnection"*/) ?? 
                     throw new Exception("There are no any connection string with the same name \"DefaultConnection\"");
 
-builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlite(connection));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connection));
 
 builder.Services.AddControllers();
 
@@ -32,5 +32,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+AppDbInitializer.Seed(app);
 
 app.Run();

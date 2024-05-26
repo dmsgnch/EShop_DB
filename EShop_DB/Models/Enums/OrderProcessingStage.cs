@@ -2,7 +2,7 @@ namespace EShop_DB.Models.Enums;
 
 public enum OrderProcessingStage
 {
-    Cart,   
+    Cart = 0,   
     OrderConfirmation,
     Delivery,               
     PickupReady,           

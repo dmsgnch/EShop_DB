@@ -9,7 +9,14 @@ public class Order
 {
     [Display(Name = "Order id")] public Guid OrderId { get; set; } = Guid.NewGuid();
 
-    [Display(Name = "Stage")] public OrderProcessingStage OrderProcessingStage => OrderEvents[0].Stage;
+    [Display(Name = "Stage")]
+    public OrderProcessingStage OrderProcessingStage
+    {
+        get
+        {
+            return OrderEvents[0]?.Stage ?? throw new Exception("");
+        }
+    } 
 
     public Guid? AnonymousToken { get; set; }
 
@@ -29,7 +36,7 @@ public class Order
     {
     }
 
-    public Order(User? user, Guid? anonymousToken)
+    public Order(User? user = null, Guid? anonymousToken = null)
     {
         if (user is not null && anonymousToken is not null ||
             user is null && anonymousToken is null)
@@ -39,6 +46,11 @@ public class Order
 
         if (user is not null)
         {
+            if (!user.Role!.RoleTag.Equals(RoleTag.Customer))
+            {
+                throw new Exception("Only the customer can place an order!");
+            }
+            
             User = user;
             UserId = user.UserId;
         }
@@ -46,6 +58,8 @@ public class Order
         {
             AnonymousToken = anonymousToken;
         }
+        
+        OrderEvents.Add(new OrderEvent(this));
     }
 
     #endregion
@@ -57,7 +71,7 @@ public class Order
     [ForeignKey(nameof(UserId))] public User? User { get; set; }
     
     //OrderEvent
-    public List<OrderEvent> OrderEvents { get; set; }
+    public List<OrderEvent> OrderEvents { get; set; } = new();
 
     //CartItem
     public List<OrderItem>? OrderItems { get; set; } = new();

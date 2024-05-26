@@ -1,65 +1,72 @@
+using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models;
 using EShop_DB.Models.MainModels;
+using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShop_DB.Controllers;
 
-[Route("user")]
-[ApiController]
-public class UserController : Controller
+[ApiController, Route("user")]
+public class UserController : ControllerBase
 {
-    private readonly ApplicationContext _context;
+    private readonly ApplicationDbContext _dbContext;
+    private readonly string _entity = "User";
 
-    public UserController(ApplicationContext context)
+    public UserController(ApplicationDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
-    [Route("add")]
-    [HttpPost]
+    [HttpPost, Route(ApiRoutes.Universal.Create)]
     public IActionResult AddUser([FromBody]User user)
     {
-        if (_context.Users.Any(u => u.Email.Equals(user.Email)))
+        if (_dbContext.Users.Any(u => u.Email.Equals(user.Email)))
         {
-            return BadRequest("User with the same email is already exist");
+            return BadRequest(ErrorMessages.Universal.AlreadyExistsEmail(_entity));
         }
         
-        //Check, that guid is exist
-        if (user.UserId.Equals(Guid.Empty)) user.UserId = Guid.NewGuid();
+        if (!user.UserId.Equals(Guid.Empty))
+        {
+            if (_dbContext.Users.Any(u => u.UserId.Equals(user.UserId)))
+            {
+                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, user.UserId));
+            }
+        }
+        else
+        {
+            user.UserId = Guid.NewGuid();
+        }
 
-        _context.Users.Add(user);
-        _context.SaveChanges();
+        _dbContext.Users.Add(user);
+        _dbContext.SaveChanges();
 
         return Ok();
     }
     
-    [Route("delete")]
-    [HttpDelete]
+    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
     public IActionResult DeleteUser([FromRoute]Guid id)
     {
-        var result = _context.Users.FirstOrDefault(u => u.UserId.Equals(id));
+        var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
         
         if (result is null)
         {
-            return BadRequest("User was not found");
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
         }
 
-        _context.Users.Remove(result);
-        _context.SaveChanges();
+        _dbContext.Users.Remove(result);
+        _dbContext.SaveChanges();
 
         return Ok();
     }
     
-    [Route("update")]
-    [HttpPut]
+    [HttpPut, Route(ApiRoutes.Universal.Update)]
     public IActionResult UpdateUser([FromBody]User user)
     {
-        var result = _context.Users.FirstOrDefault(u => u.UserId.Equals(user.UserId));
+        var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(user.UserId));
         
         if (result is null)
         {
-            return BadRequest("User was not found");
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, user.UserId));
         }
         
         result.UserId = user.UserId;
@@ -67,31 +74,29 @@ public class UserController : Controller
         result.Email = user.Email;
         result.Password = user.Password;
 
-        _context.Users.Update(result);
-        _context.SaveChanges();
+        _dbContext.Users.Update(result);
+        _dbContext.SaveChanges();
 
         return Ok();
     }
     
-    [Route("getById")]
-    [HttpGet]
+    [HttpGet, Route(ApiRoutes.Universal.GetById)]
     public IActionResult GetUserById([FromRoute]Guid id)
     {
-        var result = _context.Users.FirstOrDefault(u => u.UserId.Equals(id));
+        var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
         
         if (result is null)
         {
-            return BadRequest("User was not found");
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
         }
 
         return Ok(result);
     }
     
-    [Route("getAll")]
-    [HttpGet]
+    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
     public IActionResult GetAllUsers()
     {
-        List<User> result = _context.Users.ToList();
+        List<User> result = _dbContext.Users.ToList();
 
         return Ok(result);
     }

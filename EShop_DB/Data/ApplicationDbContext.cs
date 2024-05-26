@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop_DB.Data;
 
-public class ApplicationContext : DbContext
+public class ApplicationDbContext : DbContext
 { 
     public DbSet<Seller> Sellers { get; set; } = null!;
     public DbSet<Product> Products { get; set; } = null!;
@@ -18,12 +18,9 @@ public class ApplicationContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; } = null!;
 
 
-    public ApplicationContext(DbContextOptions<ApplicationContext> options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
-    {
-        Database.EnsureDeleted();
-        Database.EnsureCreated(); 
-    }
+    { }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -22,8 +22,8 @@ public class OrderEvent
     {
         Order = order;
         OrderId = order.OrderId;
-
-        if ((int)Order.OrderProcessingStage <= (int)newStage)
+        
+        if (!newStage.Equals(OrderProcessingStage.Cart) && (int)Order.OrderProcessingStage <= (int)newStage)
         {
             throw new ArgumentException("New stages cannot precede or coincide with a previous stage!");
         }

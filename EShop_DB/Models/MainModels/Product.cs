@@ -15,17 +15,18 @@ public class Product
     [Display(Name = "Price")] public decimal PricePerUnit { get; set; }
     [Display(Name = "Weight")] public double WeightInGrams { get; set; }
     [Display(Name = "In stock")] public int InStock { get; set; }
-    
+
     #region Constructors
 
     public Product()
-    { }
+    {
+    }
 
     public Product(
-        string name, 
-        string description, 
-        decimal pricePerUnit, 
-        int weightInGrams, 
+        string name,
+        string description,
+        decimal pricePerUnit,
+        int weightInGrams,
         Seller seller,
         string? imageUrl = null)
     {
@@ -35,20 +36,19 @@ public class Product
         WeightInGrams = weightInGrams;
 
         ImageUrl = imageUrl ?? "";
-        
+
         SellerId = seller.SellerId;
         Seller = seller;
     }
-    
+
     #endregion
 
     #region Relationships
-    
+
     //Seller
     public Guid SellerId { get; set; }
-    [ForeignKey(nameof(SellerId))]
-    public Seller? Seller { get; set; }
-    
+    [ForeignKey(nameof(SellerId))] public Seller? Seller { get; set; }
+
     //CartItem
     public List<OrderItem>? OrderItems { get; set; } = new();
 

@@ -1,4 +1,4 @@
-﻿namespace eGeneralShop.Data.Enums
+﻿namespace EShop_DB.Models.Enums
 {
     public enum PaymentMethod
     {
