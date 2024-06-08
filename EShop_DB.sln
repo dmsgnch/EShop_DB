@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EShop_DB", "EShop_DB\EShop_DB.csproj", "{76F8D738-CCD6-43D2-8E96-B6715BCD94EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary", "..\EShop_BL\SharedLibrary\SharedLibrary.csproj", "{596DCD5D-F150-4561-8B60-860C1A05AA89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{76F8D738-CCD6-43D2-8E96-B6715BCD94EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76F8D738-CCD6-43D2-8E96-B6715BCD94EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76F8D738-CCD6-43D2-8E96-B6715BCD94EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{596DCD5D-F150-4561-8B60-860C1A05AA89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{596DCD5D-F150-4561-8B60-860C1A05AA89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{596DCD5D-F150-4561-8B60-860C1A05AA89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{596DCD5D-F150-4561-8B60-860C1A05AA89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

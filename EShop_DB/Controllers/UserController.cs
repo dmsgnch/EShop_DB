@@ -1,8 +1,8 @@
+using EShop_BL.Models.MainModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -17,7 +17,7 @@ public class UserController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddUser([FromBody]User user)
     {
         if (_dbContext.Users.Any(u => u.Email.Equals(user.Email)))
@@ -43,7 +43,7 @@ public class UserController : ControllerBase
         return Ok();
     }
     
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteUser([FromRoute]Guid id)
     {
         var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
@@ -59,7 +59,7 @@ public class UserController : ControllerBase
         return Ok();
     }
     
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateUser([FromBody]User user)
     {
         var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(user.UserId));
@@ -70,9 +70,22 @@ public class UserController : ControllerBase
         }
         
         result.UserId = user.UserId;
+        
         result.Name = user.Name;
+        result.LastName = user.LastName;
+        result.Patronymic = user.Patronymic;
+        
         result.Email = user.Email;
-        result.Password = user.Password;
+        result.PhoneNumber = user.PhoneNumber;
+        
+        result.PasswordHash = user.PasswordHash;
+        result.Salt = user.Salt;
+
+        result.RoleId = user.RoleId;
+        result.Role = user.Role;
+        result.Orders = user.Orders;
+        result.Recipient = user.Recipient;
+        result.DeliveryAddress = user.DeliveryAddress;
 
         _dbContext.Users.Update(result);
         _dbContext.SaveChanges();
@@ -80,7 +93,7 @@ public class UserController : ControllerBase
         return Ok();
     }
     
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetUserById([FromRoute]Guid id)
     {
         var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
@@ -93,7 +106,7 @@ public class UserController : ControllerBase
         return Ok(result);
     }
     
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllUsers()
     {
         List<User> result = _dbContext.Users.ToList();

@@ -1,11 +1,8 @@
+using EShop_BL.Models.SecondaryModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.Enums;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Models.SecondaryModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -20,7 +17,7 @@ public class OrderEventController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddOrderEvent([FromBody] OrderEvent orderEvent)
     {
         ValidateOrderEvent(orderEvent);
@@ -50,7 +47,7 @@ public class OrderEventController : ControllerBase
         //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
     }
 
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteOrderEvent([FromRoute] Guid id)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(id));
@@ -66,7 +63,7 @@ public class OrderEventController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateOrderEvent([FromBody] OrderEvent orderEvent)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(orderEvent.OrderEventId));
@@ -90,7 +87,7 @@ public class OrderEventController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetOrderEventById([FromRoute] Guid id)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(id));
@@ -103,7 +100,7 @@ public class OrderEventController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllOrderEvents()
     {
         List<OrderEvent> result = _dbContext.OrderEvents.ToList();

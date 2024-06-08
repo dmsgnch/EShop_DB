@@ -1761,6 +1761,16 @@
             "rid": "win"
           }
         }
+      },
+      "SharedLibrary/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/SharedLibrary.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SharedLibrary.dll": {}
+        }
       }
     }
   },
@@ -4765,6 +4775,11 @@
         "system.windows.extensions.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "SharedLibrary/1.0.0": {
+      "type": "project",
+      "path": "../../EShop_BL/SharedLibrary/SharedLibrary.csproj",
+      "msbuildProject": "../../EShop_BL/SharedLibrary/SharedLibrary.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -4774,6 +4789,7 @@
       "Microsoft.EntityFrameworkCore.SqlServer >= 8.0.1",
       "Microsoft.EntityFrameworkCore.Sqlite >= 8.0.1",
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.1",
+      "SharedLibrary >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.4.0"
     ]
   },
@@ -4808,7 +4824,11 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\Dimchik\\source\\repos\\RiderProjects\\EShop_BL\\SharedLibrary\\SharedLibrary.csproj": {
+              "projectPath": "C:\\Users\\Dimchik\\source\\repos\\RiderProjects\\EShop_BL\\SharedLibrary\\SharedLibrary.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

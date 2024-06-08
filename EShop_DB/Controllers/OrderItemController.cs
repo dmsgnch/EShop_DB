@@ -1,8 +1,8 @@
+using EShop_BL.Models.MainModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -17,7 +17,7 @@ public class OrderItemController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddOrderItem([FromBody] OrderItem orderItem)
     {
         //No restrictions on entities
@@ -40,7 +40,7 @@ public class OrderItemController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteOrderItem([FromRoute] Guid id)
     {
         var result = _dbContext.OrderItems.FirstOrDefault(oi => oi.OrderItemId.Equals(id));
@@ -56,7 +56,7 @@ public class OrderItemController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateOrderItem([FromBody] OrderItem orderItem)
     {
         var result = _dbContext.OrderItems.FirstOrDefault(oi => oi.OrderItemId.Equals(orderItem.OrderItemId));
@@ -82,7 +82,7 @@ public class OrderItemController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetOrderItemById([FromRoute] Guid id)
     {
         var result = _dbContext.OrderItems.FirstOrDefault(oi => oi.OrderItemId.Equals(id));
@@ -95,7 +95,7 @@ public class OrderItemController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllOrderItems()
     {
         List<OrderItem> result = _dbContext.OrderItems.ToList();

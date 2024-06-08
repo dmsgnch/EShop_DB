@@ -1,8 +1,8 @@
+using EShop_BL.Models.MainModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -17,7 +17,7 @@ public class RoleController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetRoleById([FromRoute] Guid id)
     {
         var result = _dbContext.Roles.FirstOrDefault(r => r.RoleId.Equals(id));
@@ -30,7 +30,7 @@ public class RoleController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllRoles()
     {
         List<Role> result = _dbContext.Roles.ToList();

@@ -1,8 +1,8 @@
+using EShop_BL.Models.SecondaryModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.SecondaryModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -17,7 +17,7 @@ public class RecipientController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddRecipient([FromBody] Recipient recipient)
     {
         if (_dbContext.Recipients.Any(r => r.PhoneNumber.Equals(recipient.PhoneNumber))) 
@@ -43,7 +43,7 @@ public class RecipientController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteRecipient([FromRoute] Guid id)
     {
         var result = _dbContext.Recipients.FirstOrDefault(r => r.RecipientId.Equals(id));
@@ -59,7 +59,7 @@ public class RecipientController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateRecipient([FromBody] Recipient recipient)
     {
         var result = _dbContext.Recipients.FirstOrDefault(r => r.RecipientId.Equals(recipient.RecipientId));
@@ -85,7 +85,7 @@ public class RecipientController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetRecipientById([FromRoute] Guid id)
     {
         var result = _dbContext.Recipients.FirstOrDefault(r => r.RecipientId.Equals(id));
@@ -98,7 +98,7 @@ public class RecipientController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllRecipients()
     {
         List<Recipient> result = _dbContext.Recipients.ToList();

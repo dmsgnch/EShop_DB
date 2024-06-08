@@ -1,8 +1,8 @@
+using EShop_BL.Models.MainModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -17,7 +17,7 @@ public class SellerController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddSeller([FromBody] Seller seller)
     {
         if (_dbContext.Sellers.Any(s => s.EmailAddress.Equals(seller.EmailAddress)
@@ -44,7 +44,7 @@ public class SellerController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteSeller([FromRoute] Guid id)
     {
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(id));
@@ -60,7 +60,7 @@ public class SellerController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateSeller([FromBody] Seller seller)
     {
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(seller.SellerId));
@@ -85,7 +85,7 @@ public class SellerController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetSellerById([FromRoute] Guid id)
     {
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(id));
@@ -98,7 +98,7 @@ public class SellerController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllSellers()
     {
         List<Seller> result = _dbContext.Sellers.ToList();

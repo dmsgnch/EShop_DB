@@ -1,9 +1,8 @@
+using EShop_BL.Models.MainModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -18,7 +17,7 @@ public class ProductController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddProduct([FromBody] Product product)
     {
         if (_dbContext.Products.Any(p => p.Name.Equals(product.Name) && p.SellerId.Equals(product.SellerId)))
@@ -44,7 +43,7 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteProduct([FromRoute] Guid id)
     {
         var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
@@ -60,7 +59,7 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateProduct([FromBody] Product product)
     {
         var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(product.ProductId));
@@ -89,7 +88,7 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetProductById([FromRoute] Guid id)
     {
         var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
@@ -102,7 +101,7 @@ public class ProductController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllProducts()
     {
         List<Product> result = _dbContext.Products.ToList();

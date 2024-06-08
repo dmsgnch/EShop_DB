@@ -1,9 +1,8 @@
+using EShop_BL.Models.SecondaryModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
-using EShop_DB.Models.MainModels;
-using EShop_DB.Models.SecondaryModels;
-using EShop_DB.Common.Constants.Routes;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
@@ -18,7 +17,7 @@ public class DeliveryAddressController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutes.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddDeliveryAddress([FromBody]DeliveryAddress deliveryAddress)
     {
         ValidateDeliveryAddress(deliveryAddress);
@@ -48,7 +47,7 @@ public class DeliveryAddressController : ControllerBase
         //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
     }
     
-    [HttpDelete, Route(ApiRoutes.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
     public IActionResult DeleteDeliveryAddress([FromRoute]Guid id)
     {
         var result = _dbContext.DeliveryAddresses.FirstOrDefault(da => da.DeliveryAddressId.Equals(id));
@@ -64,7 +63,7 @@ public class DeliveryAddressController : ControllerBase
         return Ok();
     }
     
-    [HttpPut, Route(ApiRoutes.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
     public IActionResult UpdateDeliveryAddress([FromBody]DeliveryAddress deliveryAddress)
     {
         var result = _dbContext.DeliveryAddresses.FirstOrDefault(da => da.DeliveryAddressId.Equals(deliveryAddress.DeliveryAddressId));
@@ -93,7 +92,7 @@ public class DeliveryAddressController : ControllerBase
         return Ok();
     }
     
-    [HttpGet, Route(ApiRoutes.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
     public IActionResult GetDeliveryAddressById([FromRoute]Guid id)
     {
         var result = _dbContext.DeliveryAddresses.FirstOrDefault(da => da.DeliveryAddressId.Equals(id));
@@ -106,7 +105,7 @@ public class DeliveryAddressController : ControllerBase
         return Ok(result);
     }
     
-    [HttpGet, Route(ApiRoutes.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllDeliveryAddresses()
     {
         List<DeliveryAddress> result = _dbContext.DeliveryAddresses.ToList();
