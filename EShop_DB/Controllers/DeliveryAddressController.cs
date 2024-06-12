@@ -1,7 +1,7 @@
-using EShop_BL.Models.SecondaryModels;
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Models.SecondaryModels;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;

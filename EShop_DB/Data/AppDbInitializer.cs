@@ -1,7 +1,7 @@
-﻿using EShop_BL.Models.Enums;
-using EShop_BL.Models.MainModels;
-using EShop_BL.Models.SecondaryModels;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Models.Enums;
+using SharedLibrary.Models.MainModels;
+using SharedLibrary.Models.SecondaryModels;
 
 namespace EShop_DB.Data;
 
@@ -84,16 +84,20 @@ public class AppDbInitializer
             {
                 context.Users.AddRange(new User[]
                 {
-                    new User("Name1", "LastName1", "password1", "0910000001",
+                    new User("Name1", "LastName1", "r9X/o0T/7e+aYvhUDRUre6BV1wuz7iin",
+                        "ISYt5iHhmvYglEvtnU5SxLYWeWBKZQvT", "0910000001",
                         "email1@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Customer),
                         "Patronymic1"),
-                    new User("Name2", "LastName2", "password2", "0910000002",
+                    new User("Name2", "LastName2", "49afmaFDMZXw9qLkP4m2igfuP2WoAN5H",
+                        "5Xn+THuUhypPeBCINM4aR8W2upPFGoCf", "0910000002",
                         "email2@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Customer),
                         "Patronymic2"),
-                    new User("Name3", "LastName3", "password3", "0910000003",
+                    new User("Name3", "LastName3", "7hbDqQcwuuP93r0EyxratECL4aOQ6IBC",
+                        "VxV/v9Fnmq2duNDMwcoAM1qdBw4ZFalG", "0910000003",
                         "email3@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Manager),
                         "Patronymic3"),
-                    new User("Name4", "LastName4", "password4", "0910000004",
+                    new User("Name4", "LastName4", "MOW7jtvri2tEw2aaiQb1aykdWAMHvYhZ",
+                        "W+HxwNlPVaGbMOQC63QJsMjYXXJkw+lW", "0910000004",
                         "email4@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.AdvManager),
                         "Patronymic4"),
                 });
