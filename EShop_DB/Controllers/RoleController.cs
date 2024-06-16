@@ -2,11 +2,12 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Models.MainModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("role")]
+[ApiController, Route(ApiRoutesDb.Controllers.Role)]
 public class RoleController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -17,14 +18,14 @@ public class RoleController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetRoleById([FromRoute] Guid id)
     {
         var result = _dbContext.Roles.FirstOrDefault(r => r.RoleId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);

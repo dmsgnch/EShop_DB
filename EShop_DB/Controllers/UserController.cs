@@ -1,12 +1,14 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Models.MainModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("user")]
+[ApiController, Route(ApiRoutesDb.Controllers.User)]
 public class UserController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -22,19 +24,24 @@ public class UserController : ControllerBase
     {
         if (_dbContext.Users.Any(u => u.Email.Equals(user.Email)))
         {
-            return BadRequest(ErrorMessages.Universal.AlreadyExistsEmail(_entity));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsEmail(_entity)));
         }
         
         if (!user.UserId.Equals(Guid.Empty))
         {
             if (_dbContext.Users.Any(u => u.UserId.Equals(user.UserId)))
             {
-                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, user.UserId));
+                return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, user.UserId)));
             }
         }
         else
         {
             user.UserId = Guid.NewGuid();
+        }
+
+        if (!(user.RoleId > 0))
+        {
+            user.RoleId = 1;
         }
 
         _dbContext.Users.Add(user);
@@ -43,14 +50,14 @@ public class UserController : ControllerBase
         return Ok();
     }
     
-    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
     public IActionResult DeleteUser([FromRoute]Guid id)
     {
         var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
         
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Users.Remove(result);
@@ -66,7 +73,7 @@ public class UserController : ControllerBase
         
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, user.UserId));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, user.UserId)));
         }
         
         result.UserId = user.UserId;
@@ -93,14 +100,14 @@ public class UserController : ControllerBase
         return Ok();
     }
     
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetUserById([FromRoute]Guid id)
     {
-        var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
+        var result = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId.Equals(id));
         
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);

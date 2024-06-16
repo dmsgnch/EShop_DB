@@ -2,11 +2,12 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Models.SecondaryModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("recipient")]
+[ApiController, Route(ApiRoutesDb.Controllers.Recipient)]
 public class RecipientController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -20,16 +21,17 @@ public class RecipientController : ControllerBase
     [HttpPost, Route(ApiRoutesDb.Universal.Create)]
     public IActionResult AddRecipient([FromBody] Recipient recipient)
     {
-        if (_dbContext.Recipients.Any(r => r.PhoneNumber.Equals(recipient.PhoneNumber))) 
+        if (_dbContext.Recipients.Any(r => r.PhoneNumber.Equals(recipient.PhoneNumber)))
         {
-            return BadRequest(ErrorMessages.Recipient.AlreadyExistsPhone);
+            return BadRequest(new LambdaResponse(ErrorMessages.Recipient.AlreadyExistsPhone));
         }
 
         if (!recipient.RecipientId.Equals(Guid.Empty))
         {
             if (_dbContext.Recipients.Any(r => r.RecipientId.Equals(recipient.RecipientId)))
             {
-                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, recipient.RecipientId));
+                return BadRequest(
+                    new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, recipient.RecipientId)));
             }
         }
         else
@@ -43,14 +45,14 @@ public class RecipientController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
     public IActionResult DeleteRecipient([FromRoute] Guid id)
     {
         var result = _dbContext.Recipients.FirstOrDefault(r => r.RecipientId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Recipients.Remove(result);
@@ -66,7 +68,7 @@ public class RecipientController : ControllerBase
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, recipient.RecipientId));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, recipient.RecipientId)));
         }
 
         result.RecipientId = recipient.RecipientId;
@@ -85,14 +87,14 @@ public class RecipientController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetRecipientById([FromRoute] Guid id)
     {
         var result = _dbContext.Recipients.FirstOrDefault(r => r.RecipientId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);

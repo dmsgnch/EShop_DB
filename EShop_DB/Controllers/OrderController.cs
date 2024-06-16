@@ -2,11 +2,12 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Models.MainModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("order")]
+[ApiController, Route(ApiRoutesDb.Controllers.Order)]
 public class OrderController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -26,7 +27,7 @@ public class OrderController : ControllerBase
         {
             if (_dbContext.Orders.Any(o => o.OrderId.Equals(order.OrderId)))
             {
-                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, order.OrderId));
+                return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, order.OrderId)));
             }
         }
         else
@@ -47,14 +48,14 @@ public class OrderController : ControllerBase
         //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
     }
     
-    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
     public IActionResult DeleteOrder([FromRoute]Guid id)
     {
         var result = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(id));
         
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Orders.Remove(result);
@@ -70,7 +71,7 @@ public class OrderController : ControllerBase
         
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, order.OrderId));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, order.OrderId)));
         }
         
         result.OrderId = order.OrderId;
@@ -87,14 +88,14 @@ public class OrderController : ControllerBase
         return Ok();
     }
     
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetOrderById([FromRoute]Guid id)
     {
         var result = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(id));
         
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);

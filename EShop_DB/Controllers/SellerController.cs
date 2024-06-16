@@ -2,11 +2,12 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Models.MainModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("seller")]
+[ApiController, Route(ApiRoutesDb.Controllers.Seller)]
 public class SellerController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -23,14 +24,14 @@ public class SellerController : ControllerBase
         if (_dbContext.Sellers.Any(s => s.EmailAddress.Equals(seller.EmailAddress)
                                         || s.CompanyName.Equals(seller.CompanyName)))
         {
-            return BadRequest(ErrorMessages.Seller.AlreadyExistsEmailOrName);
+            return BadRequest(new LambdaResponse(ErrorMessages.Seller.AlreadyExistsEmailOrName));
         }
 
         if (!seller.SellerId.Equals(Guid.Empty))
         {
             if (_dbContext.Sellers.Any(s => s.SellerId.Equals(seller.SellerId)))
             {
-                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, seller.SellerId));
+                return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, seller.SellerId)));
             }
         }
         else
@@ -44,14 +45,14 @@ public class SellerController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
     public IActionResult DeleteSeller([FromRoute] Guid id)
     {
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Sellers.Remove(result);
@@ -67,7 +68,7 @@ public class SellerController : ControllerBase
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, seller.SellerId));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, seller.SellerId)));
         }
 
         result.SellerId = seller.SellerId;
@@ -85,14 +86,14 @@ public class SellerController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetSellerById([FromRoute] Guid id)
     {
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);

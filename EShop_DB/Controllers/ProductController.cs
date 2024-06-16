@@ -2,11 +2,12 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Models.MainModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("product")]
+[ApiController, Route(ApiRoutesDb.Controllers.Product)]
 public class ProductController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -22,14 +23,14 @@ public class ProductController : ControllerBase
     {
         if (_dbContext.Products.Any(p => p.Name.Equals(product.Name) && p.SellerId.Equals(product.SellerId)))
         {
-            return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
+            return BadRequest(new LambdaResponse(ErrorMessages.Product.AlreadyExistsNameSeller));
         }
 
         if (!product.ProductId.Equals(Guid.Empty))
         {
             if (_dbContext.Products.Any(p => p.ProductId.Equals(product.ProductId)))
             {
-                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, product.ProductId));
+                return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, product.ProductId)));
             }
         }
         else
@@ -43,14 +44,14 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
     public IActionResult DeleteProduct([FromRoute] Guid id)
     {
         var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Products.Remove(result);
@@ -66,7 +67,7 @@ public class ProductController : ControllerBase
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, product.ProductId));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, product.ProductId)));
         }
 
         result.ProductId = product.ProductId;
@@ -88,14 +89,14 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetProductById([FromRoute] Guid id)
     {
         var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);

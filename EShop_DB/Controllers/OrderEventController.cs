@@ -2,11 +2,12 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Models.SecondaryModels;
+using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route("orderEvent")]
+[ApiController, Route(ApiRoutesDb.Controllers.OrderEvent)]
 public class OrderEventController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -26,7 +27,8 @@ public class OrderEventController : ControllerBase
         {
             if (_dbContext.OrderEvents.Any(oe => oe.OrderEventId.Equals(orderEvent.OrderEventId)))
             {
-                return BadRequest(ErrorMessages.Universal.AlreadyExistsId(_entity, orderEvent.OrderEventId));
+                return BadRequest(
+                    new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, orderEvent.OrderEventId)));
             }
         }
         else
@@ -47,14 +49,14 @@ public class OrderEventController : ControllerBase
         //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
     }
 
-    [HttpDelete, Route(ApiRoutesDb.Universal.Delete)]
+    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
     public IActionResult DeleteOrderEvent([FromRoute] Guid id)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.OrderEvents.Remove(result);
@@ -70,13 +72,13 @@ public class OrderEventController : ControllerBase
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, orderEvent.OrderEventId));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, orderEvent.OrderEventId)));
         }
 
         result.OrderEventId = orderEvent.OrderEventId;
         result.EventTime = orderEvent.EventTime;
         result.Stage = orderEvent.Stage;
-        
+
         result.OrderId = orderEvent.OrderId;
         result.Order = orderEvent.Order;
 
@@ -87,14 +89,14 @@ public class OrderEventController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetById)]
+    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetOrderEventById([FromRoute] Guid id)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
+            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);
