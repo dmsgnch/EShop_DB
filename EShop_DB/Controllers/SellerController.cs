@@ -93,7 +93,7 @@ public class SellerController : ControllerBase
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            return BadRequest(ErrorMessages.Universal.NotFoundWithId(_entity, id));
         }
 
         return Ok(result);

@@ -74,7 +74,7 @@ public class AppDbInitializer
                 {
                     new Role(RoleTag.Customer),
                     new Role(RoleTag.Manager),
-                    new Role(RoleTag.AdvManager),
+                    new Role(RoleTag.Seller),
                 });
 
                 context.SaveChanges();
@@ -87,19 +87,19 @@ public class AppDbInitializer
                     new User("Name1", "LastName1", "r9X/o0T/7e+aYvhUDRUre6BV1wuz7iin",
                         "ISYt5iHhmvYglEvtnU5SxLYWeWBKZQvT", "0910000001",
                         "email1@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Customer),
-                        "Patronymic1"),
+                        "Patronymic1") {UserId = new Guid("301bf403-6e71-45fa-a2ec-49e80dbdf9d9")},
                     new User("Name2", "LastName2", "49afmaFDMZXw9qLkP4m2igfuP2WoAN5H",
                         "5Xn+THuUhypPeBCINM4aR8W2upPFGoCf", "0910000002",
                         "email2@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Customer),
-                        "Patronymic2"),
+                        "Patronymic2") {UserId = new Guid("914ee195-0d3c-460a-801a-f9bdfa34f7e4")},
                     new User("Name3", "LastName3", "7hbDqQcwuuP93r0EyxratECL4aOQ6IBC",
                         "VxV/v9Fnmq2duNDMwcoAM1qdBw4ZFalG", "0910000003",
                         "email3@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Manager),
-                        "Patronymic3"),
+                        "Patronymic3") {UserId = new Guid("9b4f7c7e-b855-4a35-b375-cd1e35112ccd")},
                     new User("Name4", "LastName4", "MOW7jtvri2tEw2aaiQb1aykdWAMHvYhZ",
                         "W+HxwNlPVaGbMOQC63QJsMjYXXJkw+lW", "0910000004",
-                        "email4@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.AdvManager),
-                        "Patronymic4"),
+                        "email4@gmail.com", context.Roles.First(r => r.RoleTag == RoleTag.Seller),
+                        "Patronymic4") {UserId = new Guid("69436fd8-50b5-4273-b261-8497cf2b1e82")},
                 });
 
                 context.SaveChanges();

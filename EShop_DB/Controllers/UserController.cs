@@ -2,6 +2,7 @@ using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SharedLibrary.Models.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
@@ -103,21 +104,43 @@ public class UserController : ControllerBase
     [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
     public IActionResult GetUserById([FromRoute]Guid id)
     {
-        var result = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId.Equals(id));
-        
-        if (result is null)
+        try
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
-        }
+            User? result = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId.Equals(id));
 
-        return Ok(result);
+            if (result is null)
+            {
+                return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            }
+            
+            result.Role.Users = null;
+
+            var lambda = new LambdaResponse<User>(responseObject: result);
+
+            var jsonResult = JsonConvert.SerializeObject(lambda);
+            
+            return Ok(jsonResult);
+        }
+        catch (Exception ex)
+        {
+            // Логируем ошибку, чтобы можно было отследить детали
+            Console.WriteLine($"An error occurred while getting user by ID: {id} with error: {ex.Message}");
+
+            // Возвращаем общее сообщение об ошибке
+            return StatusCode(500, new LambdaResponse("An unexpected error occurred. Please try again later."));
+        }
     }
     
     [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
     public IActionResult GetAllUsers()
     {
-        List<User> result = _dbContext.Users.ToList();
+        List<User> result = _dbContext.Users.Include(u => u.Role).ToList();
 
-        return Ok(result);
+        foreach (var user in result)
+        {
+            user.Role.Users = null;
+        }
+        
+        return Ok(JsonConvert.SerializeObject(result));
     }
 }
