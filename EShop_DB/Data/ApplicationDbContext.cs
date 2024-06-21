@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using SharedLibrary.Models.MainModels;
-using SharedLibrary.Models.SecondaryModels;
+using SharedLibrary.Models.DbModels.MainModels;
+using SharedLibrary.Models.DbModels.SecondaryModels;
 
 namespace EShop_DB.Data;
 

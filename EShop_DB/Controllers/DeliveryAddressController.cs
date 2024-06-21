@@ -1,15 +1,13 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using SharedLibrary.Models.SecondaryModels;
+using SharedLibrary.Models.DbModels.SecondaryModels;
 using SharedLibrary.Responses;
-using SharedLibrary.Responses.Abstract;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route(ApiRoutesDb.Controllers.DeliveryAddress)]
+[ApiController, Route(ApiRoutesDb.Controllers.DeliveryAddressContr)]
 public class DeliveryAddressController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -20,7 +18,7 @@ public class DeliveryAddressController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
     public IActionResult AddDeliveryAddress([FromBody] DeliveryAddress deliveryAddress)
     {
         ValidateDeliveryAddress(deliveryAddress);
@@ -31,7 +29,7 @@ public class DeliveryAddressController : ControllerBase
             {
                 return BadRequest(
                     new LambdaResponse(
-                        ErrorMessages.Universal.AlreadyExistsId(_entity, deliveryAddress.DeliveryAddressId))
+                        ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, deliveryAddress.DeliveryAddressId))
                 );
             }
         }
@@ -53,14 +51,14 @@ public class DeliveryAddressController : ControllerBase
         //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
     }
 
-    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
     public IActionResult DeleteDeliveryAddress([FromRoute] Guid id)
     {
         var result = _dbContext.DeliveryAddresses.FirstOrDefault(da => da.DeliveryAddressId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.DeliveryAddresses.Remove(result);
@@ -69,7 +67,7 @@ public class DeliveryAddressController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
     public IActionResult UpdateDeliveryAddress([FromBody] DeliveryAddress deliveryAddress)
     {
         var result =
@@ -79,7 +77,7 @@ public class DeliveryAddressController : ControllerBase
         if (result is null)
         {
             return BadRequest(
-                new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, deliveryAddress.DeliveryAddressId)));
+                new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, deliveryAddress.DeliveryAddressId)));
         }
 
         result.DeliveryAddressId = deliveryAddress.DeliveryAddressId;
@@ -101,20 +99,20 @@ public class DeliveryAddressController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
     public IActionResult GetDeliveryAddressById([FromRoute] Guid id)
     {
         var result = _dbContext.DeliveryAddresses.FirstOrDefault(da => da.DeliveryAddressId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
     public IActionResult GetAllDeliveryAddresses()
     {
         List<DeliveryAddress> result = _dbContext.DeliveryAddresses.ToList();

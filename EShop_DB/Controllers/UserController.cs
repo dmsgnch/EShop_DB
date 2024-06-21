@@ -3,13 +3,14 @@ using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using SharedLibrary.Models.MainModels;
+using SharedLibrary.Models.DbModels.MainModels;
+using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route(ApiRoutesDb.Controllers.User)]
+[ApiController, Route(ApiRoutesDb.Controllers.UserContr)]
 public class UserController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -20,19 +21,21 @@ public class UserController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
-    public IActionResult AddUser([FromBody]User user)
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
+    public IActionResult AddUser([FromBody] User user)
     {
         if (_dbContext.Users.Any(u => u.Email.Equals(user.Email)))
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsEmail(_entity)));
+            var lambda = new LambdaResponse(ErrorMessages.UniversalMessages.AlreadyExistsEmail(_entity));
+            return BadRequest(lambda);
         }
-        
+
         if (!user.UserId.Equals(Guid.Empty))
         {
             if (_dbContext.Users.Any(u => u.UserId.Equals(user.UserId)))
             {
-                return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, user.UserId)));
+                return BadRequest(
+                    new LambdaResponse<User>(errorInfo: ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, user.UserId)));
             }
         }
         else
@@ -47,100 +50,143 @@ public class UserController : ControllerBase
 
         _dbContext.Users.Add(user);
         _dbContext.SaveChanges();
+        
+        AddAllUserIncludeModels(user);
 
-        return Ok();
+        return Ok(new LambdaResponse<User>(responseObject: user, info: SuccessMessages.UserMessages.Created));
     }
-    
-    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
-    public IActionResult DeleteUser([FromRoute]Guid id)
+
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
+    public IActionResult DeleteUser([FromRoute] Guid id)
     {
         var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
-        
+
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            return BadRequest(new LambdaResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Users.Remove(result);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new LambdaResponse(info: SuccessMessages.UserMessages.Deleted));
     }
-    
-    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
-    public IActionResult UpdateUser([FromBody]User user)
+
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
+    public IActionResult UpdateUser([FromBody] User user)
     {
         var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(user.UserId));
-        
+
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, user.UserId)));
+            return BadRequest(
+                new LambdaResponse<User>(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, user.UserId)));
         }
-        
+
         result.UserId = user.UserId;
-        
+
         result.Name = user.Name;
         result.LastName = user.LastName;
         result.Patronymic = user.Patronymic;
-        
+
         result.Email = user.Email;
         result.PhoneNumber = user.PhoneNumber;
-        
-        result.PasswordHash = user.PasswordHash;
-        result.Salt = user.Salt;
+
+        if (!String.IsNullOrEmpty(user.PasswordHash))
+        {
+            result.PasswordHash = user.PasswordHash;
+            result.Salt = user.Salt;
+        }
 
         result.RoleId = user.RoleId;
-        result.Role = user.Role;
-        result.Orders = user.Orders;
-        result.Recipient = user.Recipient;
-        result.DeliveryAddress = user.DeliveryAddress;
+
+        if (user.SellerId is not null)
+        {
+            result.SellerId = user.SellerId;
+        }
 
         _dbContext.Users.Update(result);
         _dbContext.SaveChanges();
 
-        return Ok();
+        AddAllUserIncludeModels(user);
+
+        return Ok(new LambdaResponse<User>(responseObject: user, info: SuccessMessages.UserMessages.Updated));
     }
-    
-    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
-    public IActionResult GetUserById([FromRoute]Guid id)
+
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
+    public IActionResult GetUserById([FromRoute] Guid id)
     {
-        try
+        User? user = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
+
+        if (user is null)
         {
-            User? result = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId.Equals(id));
-
-            if (result is null)
-            {
-                return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
-            }
-            
-            result.Role.Users = null;
-
-            var lambda = new LambdaResponse<User>(responseObject: result);
-
-            var jsonResult = JsonConvert.SerializeObject(lambda);
-            
-            return Ok(jsonResult);
+            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
-        catch (Exception ex)
-        {
-            // Логируем ошибку, чтобы можно было отследить детали
-            Console.WriteLine($"An error occurred while getting user by ID: {id} with error: {ex.Message}");
 
-            // Возвращаем общее сообщение об ошибке
-            return StatusCode(500, new LambdaResponse("An unexpected error occurred. Please try again later."));
-        }
+        AddAllUserIncludeModels(user);
+
+        return Ok(new LambdaResponse<User>(responseObject: user));
     }
-    
-    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
+
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
     public IActionResult GetAllUsers()
     {
-        List<User> result = _dbContext.Users.Include(u => u.Role).ToList();
+        List<User> result = _dbContext.Users.ToList();
 
         foreach (var user in result)
         {
-            user.Role.Users = null;
+            AddAllUserIncludeModels(user);
         }
-        
-        return Ok(JsonConvert.SerializeObject(result));
+
+        return Ok(new LambdaResponse<List<User>>(responseObject: result));
+    }
+
+    private void AddAllUserIncludeModels(User user)
+    {
+        AddRoleIfNull(user);
+        AddSellerIfNull(user);
+        AddOrdersIfNull(user);
+    }
+
+    private void AddRoleIfNull(User user)
+    {
+        if (user.Role is null)
+        {
+            var role = _dbContext.Roles.FirstOrDefault(r => r.RoleId.Equals(user.RoleId))
+                       ?? throw new Exception($"Role with id: {user.RoleId} is not exist!");
+
+            role.Users = null;
+            user.Role = role;
+        }
+    }
+
+    private void AddSellerIfNull(User user)
+    {
+        if (user.SellerId is not null && user.Seller is null)
+        {
+            var seller = _dbContext.Sellers.FirstOrDefault(r => r.SellerId.Equals(user.SellerId))
+                         ?? throw new Exception($"Seller with id: {user.SellerId} is not exist!");
+
+            seller.Users = null;
+            user.Seller = seller;
+        }
+    }
+    
+    private void AddOrdersIfNull(User user)
+    {
+        if (user.Orders is null || user.Orders.Count.Equals(0))
+        {
+            var orders = _dbContext.Orders.Where(r => r.UserId.Equals(user.UserId)).ToList();
+
+            if (orders is not null && orders.Count > 0)
+            {
+                foreach (var order in orders)
+                {
+                    order.User = null;
+                }
+            }
+
+            user.Orders = orders;
+        }
     }
 }

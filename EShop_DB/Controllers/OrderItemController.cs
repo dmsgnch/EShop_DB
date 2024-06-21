@@ -1,13 +1,14 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
-using SharedLibrary.Models.MainModels;
+using SharedLibrary.Models.DbModels.MainModels;
+using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
 namespace EShop_DB.Controllers;
 
-[ApiController, Route(ApiRoutesDb.Controllers.OrderItem)]
+[ApiController, Route(ApiRoutesDb.Controllers.OrderItemContr)]
 public class OrderItemController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -18,7 +19,7 @@ public class OrderItemController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.Universal.Create)]
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
     public IActionResult AddOrderItem([FromBody] OrderItem orderItem)
     {
         //No restrictions on entities
@@ -27,7 +28,7 @@ public class OrderItemController : ControllerBase
         {
             if (_dbContext.OrderItems.Any(oi => oi.OrderItemId.Equals(orderItem.OrderItemId)))
             {
-                return BadRequest(new LambdaResponse(ErrorMessages.Universal.AlreadyExistsId(_entity, orderItem.OrderItemId)));
+                return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, orderItem.OrderItemId)));
             }
         }
         else
@@ -41,14 +42,14 @@ public class OrderItemController : ControllerBase
         return Ok();
     }
 
-    [HttpDelete, Route(ApiRoutesDb.Universal.DeleteController)]
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
     public IActionResult DeleteOrderItem([FromRoute] Guid id)
     {
         var result = _dbContext.OrderItems.FirstOrDefault(oi => oi.OrderItemId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.OrderItems.Remove(result);
@@ -57,14 +58,14 @@ public class OrderItemController : ControllerBase
         return Ok();
     }
 
-    [HttpPut, Route(ApiRoutesDb.Universal.Update)]
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
     public IActionResult UpdateOrderItem([FromBody] OrderItem orderItem)
     {
         var result = _dbContext.OrderItems.FirstOrDefault(oi => oi.OrderItemId.Equals(orderItem.OrderItemId));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, orderItem.OrderItemId)));
+            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, orderItem.OrderItemId)));
         }
 
         result.OrderItemId = orderItem.OrderItemId;
@@ -83,20 +84,20 @@ public class OrderItemController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetByIdController)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
     public IActionResult GetOrderItemById([FromRoute] Guid id)
     {
         var result = _dbContext.OrderItems.FirstOrDefault(oi => oi.OrderItemId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.Universal.NotFoundWithId(_entity, id)));
+            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         return Ok(result);
     }
 
-    [HttpGet, Route(ApiRoutesDb.Universal.GetAll)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
     public IActionResult GetAllOrderItems()
     {
         List<OrderItem> result = _dbContext.OrderItems.ToList();
