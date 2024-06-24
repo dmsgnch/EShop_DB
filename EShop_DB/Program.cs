@@ -1,5 +1,7 @@
+using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +10,15 @@ string connection = builder.Configuration.GetConnectionString("WebApiDatabase"/*
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connection));
 
-builder.Services.AddControllers();
+// string connectionTest = builder.Configuration.GetConnectionString("TestConnectionString") ?? 
+//                     throw new Exception("There are no any connection string with the same name \"TestConnectionString\"");
+//
+// builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionTest));
+
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,8 +1,9 @@
 using EShop_DB.Common.Constants;
+using EShop_DB.Common.Extensions;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SharedLibrary.Models.DbModels.MainModels;
+using EShop_DB.Models.MainModels;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
@@ -20,12 +21,14 @@ public class ProductController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
-    public IActionResult AddProduct([FromBody] Product product)
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]
+    public IActionResult AddProduct([FromBody] ProductDTO productDto)
     {
+        var product = productDto.ToProduct();
+        
         if (_dbContext.Products.Any(p => p.Name.Equals(product.Name) && p.SellerId.Equals(product.SellerId)))
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.ProductMessages.AlreadyExistsNameSeller));
+            return BadRequest(new UniversalResponse(ErrorMessages.ProductMessages.AlreadyExistsNameSeller));
         }
 
         if (!product.ProductId.Equals(Guid.Empty))
@@ -33,7 +36,7 @@ public class ProductController : ControllerBase
             if (_dbContext.Products.Any(p => p.ProductId.Equals(product.ProductId)))
             {
                 return BadRequest(
-                    new LambdaResponse<Product>(
+                    new UniversalResponse<Product>(
                         errorInfo: ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, product.ProductId)));
             }
         }
@@ -45,10 +48,10 @@ public class ProductController : ControllerBase
         _dbContext.Products.Add(product);
         _dbContext.SaveChanges();
 
-        return Ok(new LambdaResponse<Product>(responseObject: product, info: SuccessMessages.ProductMessages.Created));
+        return Ok(new UniversalResponse<Product>(responseObject: product, info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
-    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
     public IActionResult DeleteProduct([FromRoute] Guid id)
     {
         var result = _dbContext.Products
@@ -57,7 +60,7 @@ public class ProductController : ControllerBase
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         if (result.OrderItems != null && result.OrderItems.Any())
@@ -70,18 +73,20 @@ public class ProductController : ControllerBase
         _dbContext.Products.Remove(result);
         _dbContext.SaveChanges();
 
-        return Ok(new LambdaResponse(info: SuccessMessages.ProductMessages.Deleted));
+        return Ok(new UniversalResponse(info: SuccessMessages.UniversalResponse.Deleted(_entity)));
     }
 
-    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
-    public IActionResult UpdateProduct([FromBody] Product product)
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdateAction)]
+    public IActionResult UpdateProduct([FromBody] ProductDTO productDto)
     {
+        var product = productDto.ToProduct();
+        
         var result = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(product.ProductId));
 
         if (result is null)
         {
             return BadRequest(
-                new LambdaResponse<Product>(
+                new UniversalResponse<Product>(
                     errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, product.ProductId)));
         }
 
@@ -104,25 +109,25 @@ public class ProductController : ControllerBase
 
         AddSellerIfNull(product);
 
-        return Ok(new LambdaResponse<Product>(responseObject: product, info: SuccessMessages.ProductMessages.Updated));
+        return Ok(new UniversalResponse<Product>(responseObject: product, info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
-    public IActionResult GetProductById([FromRoute] Guid id)
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
+    public IActionResult GetProductById([FromBody] Guid id)
     {
         var product = _dbContext.Products.FirstOrDefault(p => p.ProductId.Equals(id));
 
         if (product is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         AddSellerIfNull(product);
 
-        return Ok(new LambdaResponse<Product>(responseObject: product));
+        return Ok(new UniversalResponse<Product>(responseObject: product));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllAction)]
     public IActionResult GetAllProducts()
     {
         List<Product> products = _dbContext.Products.ToList();
@@ -132,7 +137,7 @@ public class ProductController : ControllerBase
             AddSellerIfNull(product);
         }
 
-        return Ok(new LambdaResponse<List<Product>>(responseObject: products));
+        return Ok(new UniversalResponse<List<Product>>(responseObject: products));
     }
 
     private void AddSellerIfNull(Product product)

@@ -1,9 +1,10 @@
 using EShop_DB.Common.Constants;
+using EShop_DB.Common.Extensions;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using SharedLibrary.Models.DbModels.MainModels;
+using EShop_DB.Models.MainModels;
 using SharedLibrary.Models.Enums;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Requests;
@@ -16,6 +17,7 @@ namespace EShop_DB.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly string _entityCart = "Cart";
     private readonly string _entity = "Order";
 
     public OrderController(ApplicationDbContext dbContext)
@@ -23,13 +25,13 @@ public class OrderController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.OrderActions.CreatePath)]
-    public IActionResult CreateCart([FromRoute] Guid userId)
+    [HttpPost, Route(ApiRoutesDb.OrderActions.CreateCartAction)]
+    public IActionResult CreateCart([FromBody] Guid userId)
     {
         if (_dbContext.Orders.Any(o =>
                 o.UserId.Equals(userId) && o.ProcessingStage.Equals(OrderProcessingStage.Cart)))
         {
-            return BadRequest(new LambdaResponse("This user already have a cart"));
+            return BadRequest(new UniversalResponse(ErrorMessages.OrderMessages.UserAlreadyHaveCart));
         }
 
         Order cart = new Order()
@@ -42,40 +44,54 @@ public class OrderController : ControllerBase
         _dbContext.Orders.Add(cart);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new UniversalResponse<OrderDTO>(responseObject: cart.ToOrderDto(), info: SuccessMessages.UniversalResponse.Created(_entityCart)));
     }
-
-    private void ValidateOrder(Order order)
+    
+    [HttpPost, Route(ApiRoutesDb.OrderActions.CreateOrderAction)]
+    public IActionResult CreateOrderAsync([FromBody] Guid cartId)
     {
-        //TODO: Add validation after order event logic implementation
+        var cart = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(cartId));
 
-        //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
+        if (cart is null)
+        {
+            return BadRequest(new UniversalResponse(ErrorMessages.OrderMessages.CartNotFound));
+        }
+
+        //TODO: Change to orderEvent logic
+        cart.ProcessingStage = OrderProcessingStage.Order;
+
+        _dbContext.Orders.Add(cart);
+        _dbContext.SaveChanges();
+
+        return Ok(new UniversalResponse<OrderDTO>(responseObject: cart.ToOrderDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
-    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
-    public IActionResult DeleteOrder([FromRoute] Guid id)
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
+    public IActionResult DeleteOrder([FromBody] Guid id)
     {
         var result = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Orders.Remove(result);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new UniversalResponse(info: SuccessMessages.UniversalResponse.Deleted(_entity)));
     }
 
-    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
-    public IActionResult UpdateOrder([FromBody] Order order)
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdateAction)]
+    public IActionResult UpdateOrder([FromBody] OrderDTO orderDto)
     {
+        var order = orderDto.ToOrder();
+        
         var result = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(order.OrderId));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, order.OrderId)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, order.OrderId)));
         }
 
         result.OrderId = order.OrderId;
@@ -89,52 +105,30 @@ public class OrderController : ControllerBase
         _dbContext.Orders.Update(result);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new UniversalResponse<OrderDTO>(responseObject: order.ToOrderDto(), info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
-    public IActionResult GetOrderById([FromRoute] Guid id)
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
+    public IActionResult GetOrderById([FromBody] Guid id)
     {
         var result = GetAllOrdersFunc().ResponseObject?.FirstOrDefault(o => o.OrderId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
-        return Ok(new LambdaResponse<Order>(responseObject: result));
+        return Ok(new UniversalResponse<OrderDTO>(responseObject: result.ToOrderDto()));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllAction)]
     public IActionResult GetAllOrders()
     {
-        return Ok(GetAllOrdersFunc());
+        var orders = GetAllOrdersFunc();
+        return Ok(new UniversalResponse<List<OrderDTO>>(responseObject: orders.ResponseObject.Select(u => u.ToOrderDto()).ToList()));
     }
 
-    [HttpPost, Route(ApiRoutesDb.OrderActions.AddOrderItemPath)]
-    public IActionResult AddOrderItem(ProductCartRequest request)
-    {
-        List<Order>? result = GetAllOrdersFunc().ResponseObject;
-        
-        if(result is null) throw new Exception("There are no any order");
-
-        Order? cart = result.FirstOrDefault(r => r.OrderId.Equals(request.CartId));
-
-        if(cart is null) throw new Exception("There are no any cart");
-
-        _dbContext.OrderItems.Add(new OrderItem()
-        {
-            Quantity = 1,
-            ProductId = request.ProductId,
-            OrderId = request.CartId ?? throw new Exception("Cart id is null"),
-        });
-
-        _dbContext.SaveChanges();
-        
-        return Ok(result);
-    }
-
-    private LambdaResponse<List<Order>> GetAllOrdersFunc()
+    private UniversalResponse<List<Order>> GetAllOrdersFunc()
     {
         List<Order> result = _dbContext.Orders
             .Include(o => o.OrderEvents)
@@ -164,6 +158,6 @@ public class OrderController : ControllerBase
             }
         }
 
-        return new LambdaResponse<List<Order>>(responseObject: result);
+        return new UniversalResponse<List<Order>>(responseObject: result);
     }
 }

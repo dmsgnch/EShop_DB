@@ -25,4 +25,10 @@ public static class ErrorMessages
     {
         public const string AlreadyExistsNameSeller = "A product with this name already exists from this seller";
     }
+
+    public static class OrderMessages
+    {
+        public const string UserAlreadyHaveCart = "This user already have a cart";
+        public const string CartNotFound = "Order can`t be created. Cart was not found!";
+    }
 }

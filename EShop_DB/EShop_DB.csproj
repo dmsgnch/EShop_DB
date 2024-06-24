@@ -24,4 +24,8 @@
       <ProjectReference Include="..\..\EShop_BL\SharedLibrary\SharedLibrary.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Models" />
+    </ItemGroup>
+
 </Project>

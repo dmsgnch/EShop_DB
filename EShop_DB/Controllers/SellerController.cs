@@ -1,8 +1,9 @@
 using EShop_DB.Common.Constants;
+using EShop_DB.Common.Extensions;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SharedLibrary.Models.DbModels.MainModels;
+using EShop_DB.Models.MainModels;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
@@ -20,13 +21,15 @@ public class SellerController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
-    public IActionResult AddSeller([FromBody] Seller seller)
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]
+    public IActionResult AddSeller([FromBody] SellerDTO sellerDto)
     {
+        var seller = sellerDto.ToSeller();
+        
         if (_dbContext.Sellers.Any(s => s.EmailAddress.Equals(seller.EmailAddress)
                                         || s.CompanyName.Equals(seller.CompanyName)))
         {
-            return BadRequest(new LambdaResponse<Seller>(errorInfo: ErrorMessages.SellerMessages.AlreadyExistsEmailOrName));
+            return BadRequest(new UniversalResponse<SellerDTO>(errorInfo: ErrorMessages.SellerMessages.AlreadyExistsEmailOrName));
         }
 
         if (!seller.SellerId.Equals(Guid.Empty))
@@ -34,7 +37,7 @@ public class SellerController : ControllerBase
             if (_dbContext.Sellers.Any(s => s.SellerId.Equals(seller.SellerId)))
             {
                 return BadRequest(
-                    new LambdaResponse<Seller>(
+                    new UniversalResponse<SellerDTO>(
                         errorInfo: ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, seller.SellerId)));
             }
         }
@@ -46,12 +49,13 @@ public class SellerController : ControllerBase
         _dbContext.Sellers.Add(seller);
         _dbContext.SaveChanges();
 
-        return Ok(new LambdaResponse<Seller>(responseObject: seller, info: SuccessMessages.SellerMessages.Created));
+        return Ok(new UniversalResponse<SellerDTO>(responseObject: seller.ToSellerDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
-    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
-    public IActionResult DeleteSeller([FromRoute] Guid id)
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
+    public IActionResult DeleteSeller([FromBody] Guid id)
     {
+        //TODO: Must be rewrite
         var seller = _dbContext.Sellers
             .Include(s => s.Products)
             .Include(s => s.Users)
@@ -59,7 +63,7 @@ public class SellerController : ControllerBase
 
         if (seller is null)
         {
-            return BadRequest(new LambdaResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         if (seller.Products != null && seller.Products.Any())
@@ -78,55 +82,55 @@ public class SellerController : ControllerBase
         
         _dbContext.SaveChanges();
 
-        return Ok(new LambdaResponse(info: SuccessMessages.SellerMessages.Deleted));
+        return Ok(new UniversalResponse(info: SuccessMessages.UniversalResponse.Deleted(_entity)));
     }
 
-    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
-    public IActionResult UpdateSeller([FromBody] Seller seller)
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdateAction)]
+    public IActionResult UpdateSeller([FromBody] SellerDTO sellerDto)
     {
+        var seller = sellerDto.ToSeller();
+        
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(seller.SellerId));
 
         if (result is null)
         {
             return BadRequest(
-                new LambdaResponse<Seller>(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, seller.SellerId)));
+                new UniversalResponse<SellerDTO>(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, seller.SellerId)));
         }
 
-        result.SellerId = seller.SellerId;
-
-        result.EmailAddress = seller.EmailAddress;
         result.CompanyName = seller.CompanyName;
+        result.EmailAddress = seller.EmailAddress;
+        result.ContactNumber = seller.ContactNumber;
 
         result.ImageUrl = seller.ImageUrl;
-        result.ContactNumber = seller.ContactNumber;
         result.CompanyDescription = seller.CompanyDescription;
         result.AdditionNumber = seller.AdditionNumber;
 
         _dbContext.Sellers.Update(result);
         _dbContext.SaveChanges();
 
-        return Ok(new LambdaResponse<Seller>(responseObject: result, info: SuccessMessages.SellerMessages.Updated));
+        return Ok(new UniversalResponse<SellerDTO>(responseObject: result.ToSellerDto(), info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
-    public IActionResult GetSellerById([FromRoute] Guid id)
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
+    public IActionResult GetSellerById([FromBody] Guid id)
     {
         var result = _dbContext.Sellers.FirstOrDefault(s => s.SellerId.Equals(id));
 
         if (result is null)
         {
             return BadRequest(
-                new LambdaResponse<Seller>(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+                new UniversalResponse<SellerDTO>(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
-        return Ok(new LambdaResponse<Seller>(responseObject: result));
+        return Ok(new UniversalResponse<SellerDTO>(responseObject: result.ToSellerDto()));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllAction)]
     public IActionResult GetAllSellers()
     {
         List<Seller> result = _dbContext.Sellers.ToList();
 
-        return Ok(new LambdaResponse<List<Seller>>(responseObject: result));
+        return Ok(new UniversalResponse<List<SellerDTO>>(responseObject: result.Select(u => u.ToSellerDto()).ToList()));
     }
 }

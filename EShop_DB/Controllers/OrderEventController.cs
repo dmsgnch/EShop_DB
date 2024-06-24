@@ -1,7 +1,9 @@
 using EShop_DB.Common.Constants;
+using EShop_DB.Common.Extensions;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
-using SharedLibrary.Models.DbModels.SecondaryModels;
+using EShop_DB.Models.SecondaryModels;
+using SharedLibrary.Models.DtoModels.SecondaryModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
@@ -18,9 +20,11 @@ public class OrderEventController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
-    public IActionResult AddOrderEvent([FromBody] OrderEvent orderEvent)
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]
+    public IActionResult AddOrderEvent([FromBody] OrderEventDTO orderEventDto)
     {
+        var orderEvent = orderEventDto.ToOrderEvent();
+        
         ValidateOrderEvent(orderEvent);
 
         if (!orderEvent.OrderEventId.Equals(Guid.Empty))
@@ -28,7 +32,7 @@ public class OrderEventController : ControllerBase
             if (_dbContext.OrderEvents.Any(oe => oe.OrderEventId.Equals(orderEvent.OrderEventId)))
             {
                 return BadRequest(
-                    new LambdaResponse(ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, orderEvent.OrderEventId)));
+                    new UniversalResponse(ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, orderEvent.OrderEventId)));
             }
         }
         else
@@ -39,7 +43,7 @@ public class OrderEventController : ControllerBase
         _dbContext.OrderEvents.Add(orderEvent);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new UniversalResponse<OrderEventDTO>(responseObject: orderEvent.ToOrderEventDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
     private void ValidateOrderEvent(OrderEvent orderEvent)
@@ -49,30 +53,32 @@ public class OrderEventController : ControllerBase
         //return BadRequest(ErrorMessages.Product.AlreadyExistsNameSeller);
     }
 
-    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
-    public IActionResult DeleteOrderEvent([FromRoute] Guid id)
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
+    public IActionResult DeleteOrderEvent([FromBody] Guid id)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.OrderEvents.Remove(result);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new UniversalResponse(info: SuccessMessages.UniversalResponse.Deleted(_entity)));
     }
 
-    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
-    public IActionResult UpdateOrderEvent([FromBody] OrderEvent orderEvent)
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdateAction)]
+    public IActionResult UpdateOrderEvent([FromBody] OrderEventDTO orderEventDto)
     {
+        var orderEvent = orderEventDto.ToOrderEvent();
+        
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(orderEvent.OrderEventId));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, orderEvent.OrderEventId)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, orderEvent.OrderEventId)));
         }
 
         result.OrderEventId = orderEvent.OrderEventId;
@@ -86,27 +92,27 @@ public class OrderEventController : ControllerBase
         _dbContext.OrderEvents.Update(result);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return Ok(new UniversalResponse<OrderEventDTO>(responseObject: orderEvent.ToOrderEventDto(), info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
-    public IActionResult GetOrderEventById([FromRoute] Guid id)
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
+    public IActionResult GetOrderEventById([FromBody] Guid id)
     {
         var result = _dbContext.OrderEvents.FirstOrDefault(oe => oe.OrderEventId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
-        return Ok(result);
+        return Ok(new UniversalResponse<OrderEventDTO>(responseObject: result.ToOrderEventDto()));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllAction)]
     public IActionResult GetAllOrderEvents()
     {
         List<OrderEvent> result = _dbContext.OrderEvents.ToList();
 
-        return Ok(result);
+        return Ok(new UniversalResponse<List<OrderEventDTO>>(responseObject: result.Select(u => u.ToOrderEventDto()).ToList()));
     }
 }

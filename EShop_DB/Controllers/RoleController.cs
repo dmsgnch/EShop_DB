@@ -1,7 +1,8 @@
 using EShop_DB.Common.Constants;
+using EShop_DB.Common.Extensions;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
-using SharedLibrary.Models.DbModels.MainModels;
+using EShop_DB.Models.MainModels;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
@@ -19,24 +20,24 @@ public class RoleController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
-    public IActionResult GetRoleById([FromRoute] Guid id)
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
+    public IActionResult GetRoleById([FromBody] Guid id)
     {
         var result = _dbContext.Roles.FirstOrDefault(r => r.RoleId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
-        return Ok(result);
+        return Ok(result.ToRoleDto());
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllAction)]
     public IActionResult GetAllRoles()
     {
         List<Role> result = _dbContext.Roles.ToList();
 
-        return Ok(result);
+        return Ok(result.Select(u => u.ToRoleDto()).ToList());
     }
 }

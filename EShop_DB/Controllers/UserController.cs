@@ -1,9 +1,10 @@
 using EShop_DB.Common.Constants;
+using EShop_DB.Common.Extensions;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using SharedLibrary.Models.DbModels.MainModels;
+using EShop_DB.Models.MainModels;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
@@ -21,12 +22,14 @@ public class UserController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreatePath)]
-    public IActionResult AddUser([FromBody] User user)
+    [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]
+    public IActionResult AddUser([FromBody] UserDTO userDto)
     {
+        var user = userDto.ToUser();
+        
         if (_dbContext.Users.Any(u => u.Email.Equals(user.Email)))
         {
-            var lambda = new LambdaResponse(ErrorMessages.UniversalMessages.AlreadyExistsEmail(_entity));
+            var lambda = new UniversalResponse(errorInfo: ErrorMessages.UniversalMessages.AlreadyExistsEmail(_entity));
             return BadRequest(lambda);
         }
 
@@ -35,7 +38,7 @@ public class UserController : ControllerBase
             if (_dbContext.Users.Any(u => u.UserId.Equals(user.UserId)))
             {
                 return BadRequest(
-                    new LambdaResponse<User>(errorInfo: ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, user.UserId)));
+                    new UniversalResponse<UserDTO>(errorInfo: ErrorMessages.UniversalMessages.AlreadyExistsId(_entity, user.UserId)));
             }
         }
         else
@@ -53,37 +56,37 @@ public class UserController : ControllerBase
         
         AddAllUserIncludeModels(user);
 
-        return Ok(new LambdaResponse<User>(responseObject: user, info: SuccessMessages.UserMessages.Created));
+        return Ok(new UniversalResponse<UserDTO>(responseObject: user.ToUserDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
-    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteControllerPath)]
-    public IActionResult DeleteUser([FromRoute] Guid id)
+    [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
+    public IActionResult DeleteUser([FromBody] Guid id)
     {
-        var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
+        var result = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.UserId.Equals(id));
 
         if (result is null)
         {
-            return BadRequest(new LambdaResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         _dbContext.Users.Remove(result);
         _dbContext.SaveChanges();
 
-        return Ok(new LambdaResponse(info: SuccessMessages.UserMessages.Deleted));
+        return Ok(new UniversalResponse(info: SuccessMessages.UniversalResponse.Deleted(_entity)));
     }
 
-    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdatePath)]
-    public IActionResult UpdateUser([FromBody] User user)
+    [HttpPut, Route(ApiRoutesDb.UniversalActions.UpdateAction)]
+    public IActionResult UpdateUser([FromBody] UserDTO userDto)
     {
-        var result = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(user.UserId));
+        var user = userDto.ToUser();
+        
+        var result = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.UserId.Equals(user.UserId));
 
         if (result is null)
         {
             return BadRequest(
-                new LambdaResponse<User>(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, user.UserId)));
+                new UniversalResponse<UserDTO>(errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, user.UserId)));
         }
-
-        result.UserId = user.UserId;
 
         result.Name = user.Name;
         result.LastName = user.LastName;
@@ -110,25 +113,27 @@ public class UserController : ControllerBase
 
         AddAllUserIncludeModels(user);
 
-        return Ok(new LambdaResponse<User>(responseObject: user, info: SuccessMessages.UserMessages.Updated));
+        return Ok(new UniversalResponse<UserDTO>(responseObject: user.ToUserDto(), info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdControllerPath)]
-    public IActionResult GetUserById([FromRoute] Guid id)
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
+    public IActionResult GetUserById([FromBody] Guid id)
     {
-        User? user = _dbContext.Users.FirstOrDefault(u => u.UserId.Equals(id));
+        User? user = _dbContext.Users.AsNoTracking().FirstOrDefault(u => u.UserId.Equals(id));
 
         if (user is null)
         {
-            return BadRequest(new LambdaResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
+            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, id)));
         }
 
         AddAllUserIncludeModels(user);
 
-        return Ok(new LambdaResponse<User>(responseObject: user));
+        var userDto = user.ToUserDto();
+
+        return Ok(new UniversalResponse<UserDTO>(responseObject: userDto));
     }
 
-    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllPath)]
+    [HttpGet, Route(ApiRoutesDb.UniversalActions.GetAllAction)]
     public IActionResult GetAllUsers()
     {
         List<User> result = _dbContext.Users.ToList();
@@ -138,7 +143,7 @@ public class UserController : ControllerBase
             AddAllUserIncludeModels(user);
         }
 
-        return Ok(new LambdaResponse<List<User>>(responseObject: result));
+        return Ok(new UniversalResponse<List<UserDTO>>(responseObject: result.Select(u => u.ToUserDto()).ToList()));
     }
 
     private void AddAllUserIncludeModels(User user)
@@ -152,7 +157,7 @@ public class UserController : ControllerBase
     {
         if (user.Role is null)
         {
-            var role = _dbContext.Roles.FirstOrDefault(r => r.RoleId.Equals(user.RoleId))
+            var role = _dbContext.Roles.AsNoTracking().FirstOrDefault(r => r.RoleId.Equals(user.RoleId))
                        ?? throw new Exception($"Role with id: {user.RoleId} is not exist!");
 
             role.Users = null;
@@ -164,7 +169,7 @@ public class UserController : ControllerBase
     {
         if (user.SellerId is not null && user.Seller is null)
         {
-            var seller = _dbContext.Sellers.FirstOrDefault(r => r.SellerId.Equals(user.SellerId))
+            var seller = _dbContext.Sellers.AsNoTracking().FirstOrDefault(r => r.SellerId.Equals(user.SellerId))
                          ?? throw new Exception($"Seller with id: {user.SellerId} is not exist!");
 
             seller.Users = null;
@@ -176,7 +181,7 @@ public class UserController : ControllerBase
     {
         if (user.Orders is null || user.Orders.Count.Equals(0))
         {
-            var orders = _dbContext.Orders.Where(r => r.UserId.Equals(user.UserId)).ToList();
+            var orders = _dbContext.Orders.AsNoTracking().Where(r => r.UserId.Equals(user.UserId)).ToList();
 
             if (orders is not null && orders.Count > 0)
             {

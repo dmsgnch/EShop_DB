@@ -1,27 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+using EShop_DB.Data;
 using EShop_DB.Models.MainModels;
 using EShop_DB.Models.SecondaryModels;
+using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Models.Enums;
 using SharedLibrary.Routes;
 
-namespace EShop_DB.Data;
+namespace EShop_DB.Tests;
 
-public class AppDbInitializer
+public static class TestDbInitializer
 {
-    public static void Seed(IApplicationBuilder applicationBuilder)
+     public static void TestSeed(ApplicationDbContext context)
     {
-        using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
-        {
-            var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>() ??
-                          throw new Exception(nameof(ApplicationDbContext) + " service was not found");
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
 
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
+        #region Initialize with test data
 
-
-            #region Initialize with test data
-
-            Guid idForAnonymousOrder = Guid.NewGuid();
+        Guid idForAnonymousOrder = Guid.NewGuid();
 
             if (!context.Sellers.Any())
             {
@@ -211,6 +206,5 @@ public class AppDbInitializer
             }
 
             #endregion
-        }
     }
 }
