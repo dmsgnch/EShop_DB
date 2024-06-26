@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using EShop_DB.Models.MainModels;
+using EShop_DB.Models.SecondaryModels;
 using SharedLibrary.Models.Enums;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Requests;
@@ -28,42 +29,41 @@ public class OrderController : ControllerBase
     [HttpPost, Route(ApiRoutesDb.OrderActions.CreateCartAction)]
     public IActionResult CreateCart([FromBody] Guid userId)
     {
-        if (_dbContext.Orders.Any(o =>
-                o.UserId.Equals(userId) && o.ProcessingStage.Equals(OrderProcessingStage.Cart)))
-        {
-            return BadRequest(new UniversalResponse(ErrorMessages.OrderMessages.UserAlreadyHaveCart));
-        }
+        // if (_dbContext.Orders.Include(o => o.OrderEvents).ToList().Any(o =>
+        //         o.UserId.Equals(userId) && o.ProcessingStage.Equals(OrderProcessingStage.Cart)))
+        // {
+        //     return BadRequest(new UniversalResponse(ErrorMessages.OrderMessages.UserAlreadyHaveCart));
+        // }
 
-        Order cart = new Order()
-        {
-            OrderId = new Guid(),
-            ProcessingStage = OrderProcessingStage.Cart,
-            UserId = userId,
-        };
+        Order cart = new Order(userId);
 
         _dbContext.Orders.Add(cart);
         _dbContext.SaveChanges();
 
-        return Ok(new UniversalResponse<OrderDTO>(responseObject: cart.ToOrderDto(), info: SuccessMessages.UniversalResponse.Created(_entityCart)));
+        _dbContext.OrderEvents.Add(new OrderEvent(cart.OrderId));
+        _dbContext.SaveChanges();
+
+        var order = _dbContext.Orders.Include(o => o.OrderEvents).First(o => o.OrderId.Equals(cart.OrderId));
+        if (order.OrderEvents is not null && order.OrderEvents.Count > 0)
+        {
+            foreach (var orderEvent in order.OrderEvents)
+            {
+                orderEvent.Order = null;
+            }
+        }
+
+        var orderDto = order.ToOrderDto();
+        return Ok(new UniversalResponse<OrderDTO>(responseObject: orderDto,
+            info: SuccessMessages.UniversalResponse.Created(_entityCart)));
     }
-    
+
     [HttpPost, Route(ApiRoutesDb.OrderActions.CreateOrderAction)]
     public IActionResult CreateOrderAsync([FromBody] Guid cartId)
     {
-        var cart = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(cartId));
-
-        if (cart is null)
-        {
-            return BadRequest(new UniversalResponse(ErrorMessages.OrderMessages.CartNotFound));
-        }
-
-        //TODO: Change to orderEvent logic
-        cart.ProcessingStage = OrderProcessingStage.Order;
-
-        _dbContext.Orders.Add(cart);
+        _dbContext.OrderEvents.Add(new OrderEvent(cartId, OrderProcessingStage.Processing));
         _dbContext.SaveChanges();
 
-        return Ok(new UniversalResponse<OrderDTO>(responseObject: cart.ToOrderDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
+        return Ok(new UniversalResponse(info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
     [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
@@ -86,12 +86,13 @@ public class OrderController : ControllerBase
     public IActionResult UpdateOrder([FromBody] OrderDTO orderDto)
     {
         var order = orderDto.ToOrder();
-        
+
         var result = _dbContext.Orders.FirstOrDefault(o => o.OrderId.Equals(order.OrderId));
 
         if (result is null)
         {
-            return BadRequest(new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, order.OrderId)));
+            return BadRequest(
+                new UniversalResponse(ErrorMessages.UniversalMessages.NotFoundWithId(_entity, order.OrderId)));
         }
 
         result.OrderId = order.OrderId;
@@ -105,7 +106,8 @@ public class OrderController : ControllerBase
         _dbContext.Orders.Update(result);
         _dbContext.SaveChanges();
 
-        return Ok(new UniversalResponse<OrderDTO>(responseObject: order.ToOrderDto(), info: SuccessMessages.UniversalResponse.Updated(_entity)));
+        return Ok(new UniversalResponse<OrderDTO>(responseObject: order.ToOrderDto(),
+            info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
     [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
@@ -125,7 +127,8 @@ public class OrderController : ControllerBase
     public IActionResult GetAllOrders()
     {
         var orders = GetAllOrdersFunc();
-        return Ok(new UniversalResponse<List<OrderDTO>>(responseObject: orders.ResponseObject.Select(u => u.ToOrderDto()).ToList()));
+        return Ok(new UniversalResponse<List<OrderDTO>>(
+            responseObject: orders.ResponseObject.Select(u => u.ToOrderDto()).ToList()));
     }
 
     private UniversalResponse<List<Order>> GetAllOrdersFunc()

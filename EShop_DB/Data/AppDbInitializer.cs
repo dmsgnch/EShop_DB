@@ -150,9 +150,9 @@ public class AppDbInitializer
             {
                 context.Orders.AddRange(new Order[]
                 {
-                    new Order(context.Users.First(u => u.PhoneNumber.Equals("0910000001")).UserId),
-                    new Order(context.Users.First(u => u.PhoneNumber.Equals("0910000002")).UserId),
-                    new Order(anonymousToken: idForAnonymousOrder)
+                    new Order() {UserId = context.Users.First(u => u.PhoneNumber.Equals("0910000001")).UserId},
+                    new Order() {UserId = context.Users.First(u => u.PhoneNumber.Equals("0910000002")).UserId},
+                    new Order() {AnonymousToken = idForAnonymousOrder}
                 });
 
                 context.SaveChanges();
@@ -175,6 +175,15 @@ public class AppDbInitializer
 
                 context.SaveChanges();
             }
+            
+            context.OrderEvents.AddRange(new OrderEvent[]
+            {
+                new OrderEvent(context.Orders.First(o => o.User.PhoneNumber.Equals("0910000001")).OrderId),
+                new OrderEvent(context.Orders.First(o => o.User.PhoneNumber.Equals("0910000002")).OrderId),
+                new OrderEvent(context.Orders.First(o => o.User.PhoneNumber.Equals("0910000001")).OrderId, OrderProcessingStage.Processing),
+            });
+
+            context.SaveChanges();
 
             if (!context.DeliveryAddresses.Any())
             {

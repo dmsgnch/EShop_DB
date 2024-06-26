@@ -8,7 +8,7 @@ namespace EShop_DB.Models.SecondaryModels;
 public class OrderEvent
 {
     [Key]
-    public Guid OrderEventId { get; set; }
+    public Guid OrderEventId { get; set; } = Guid.NewGuid();
     
     public DateTime EventTime { get; set; }
     
@@ -22,11 +22,6 @@ public class OrderEvent
     public OrderEvent(Guid orderId, OrderProcessingStage newStage = OrderProcessingStage.Cart)
     {
         OrderId = orderId;
-        
-        if (!newStage.Equals(OrderProcessingStage.Cart) && (int)Order.ProcessingStage <= (int)newStage)
-        {
-            throw new ArgumentException("New stages cannot precede or coincide with a previous stage!");
-        }
 
         EventTime = DateTime.Now;
         Stage = newStage;

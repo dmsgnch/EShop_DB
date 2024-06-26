@@ -37,9 +37,20 @@ public class OrderItemController : ControllerBase
             orderItem.OrderItemId = Guid.NewGuid();
         }
 
-        _dbContext.OrderItems.Add(orderItem);
-        _dbContext.SaveChanges();
+        var existOrderItem = _dbContext.OrderItems.FirstOrDefault(oi =>
+            oi.OrderId.Equals(orderItem.OrderId) && oi.ProductId.Equals(orderItem.ProductId));
 
+        if (existOrderItem is not null)
+        {
+            existOrderItem.Quantity++;
+            _dbContext.SaveChanges();
+        }
+        else
+        {
+            _dbContext.OrderItems.Add(orderItem);
+            _dbContext.SaveChanges();
+        }
+        
         return Ok(new UniversalResponse<OrderItemDTO>(responseObject: orderItem.ToOrderItemDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 

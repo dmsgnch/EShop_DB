@@ -2,6 +2,7 @@ using EShop_DB.Models.MainModels;
 using EShop_DB.Models.SecondaryModels;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Models.DtoModels.SecondaryModels;
+using SharedLibrary.Models.Enums;
 
 namespace EShop_DB.Common.Extensions;
 
@@ -40,8 +41,8 @@ public static class DbModelsAndDtoConvertorExtensions
         return new User(
             userDto.Name,
             userDto.LastName,
-            userDto.PasswordHash ?? throw new Exception("Password hash is null"),
-            userDto.Salt ?? throw new Exception("Salt hash is null"),
+            userDto.PasswordHash ?? "",
+            userDto.Salt ?? "",
             userDto.PhoneNumber,
             userDto.Email,
             userDto.Patronymic
@@ -71,8 +72,6 @@ public static class DbModelsAndDtoConvertorExtensions
         return new OrderDTO()
         {
             OrderDtoId = order.OrderId,
-            
-            ProcessingStage = order.ProcessingStage,
             AnonymousToken = order.AnonymousToken,
             
             UserDtoId = order.UserId,
@@ -91,7 +90,6 @@ public static class DbModelsAndDtoConvertorExtensions
         {
             OrderId = orderDto.OrderDtoId,
             
-            ProcessingStage = orderDto.ProcessingStage,
             AnonymousToken = orderDto.AnonymousToken,
             
             UserId = orderDto.UserDtoId,
@@ -184,7 +182,7 @@ public static class DbModelsAndDtoConvertorExtensions
             productDto.Description,
             productDto.PricePerUnit,
             productDto.WeightInGrams,
-            productDto.InStock,
+            productDto.InStock ?? -1,
             productDto.SellerDtoId,
             productDto.ImageUrl)
         {

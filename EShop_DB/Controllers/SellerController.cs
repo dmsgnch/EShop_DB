@@ -73,7 +73,12 @@ public class SellerController : ControllerBase
         
         if (seller.Users != null && seller.Users.Any())
         {
-            _dbContext.Users.RemoveRange(seller.Users);
+            foreach (var user in seller.Users)
+            {
+                user.SellerId = null;
+                user.Seller = null;
+                _dbContext.Users.Update(user);
+            }
         }
         
         _dbContext.SaveChanges();

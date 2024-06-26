@@ -181,13 +181,24 @@ public class UserController : ControllerBase
     {
         if (user.Orders is null || user.Orders.Count.Equals(0))
         {
-            var orders = _dbContext.Orders.AsNoTracking().Where(r => r.UserId.Equals(user.UserId)).ToList();
+            var orders = _dbContext.Orders.AsNoTracking().Include(o => o.OrderEvents).Where(r => r.UserId.Equals(user.UserId)).ToList();
 
             if (orders is not null && orders.Count > 0)
             {
                 foreach (var order in orders)
                 {
                     order.User = null;
+                }
+                
+                foreach (var order in orders)
+                {
+                    if (order.OrderEvents is not null && order.OrderEvents.Count > 0)
+                    {
+                        foreach (var orderEvent in order.OrderEvents)
+                        {
+                            orderEvent.Order = null;
+                        }
+                    }
                 }
             }
 

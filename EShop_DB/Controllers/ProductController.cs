@@ -48,11 +48,11 @@ public class ProductController : ControllerBase
         _dbContext.Products.Add(product);
         _dbContext.SaveChanges();
 
-        return Ok(new UniversalResponse<Product>(responseObject: product, info: SuccessMessages.UniversalResponse.Created(_entity)));
+        return Ok(new UniversalResponse<ProductDTO>(responseObject: product.ToProductDto(), info: SuccessMessages.UniversalResponse.Created(_entity)));
     }
 
     [HttpDelete, Route(ApiRoutesDb.UniversalActions.DeleteAction)]
-    public IActionResult DeleteProduct([FromRoute] Guid id)
+    public IActionResult DeleteProduct([FromBody] Guid id)
     {
         var result = _dbContext.Products
             .Include(p => p.OrderItems)
@@ -86,7 +86,7 @@ public class ProductController : ControllerBase
         if (result is null)
         {
             return BadRequest(
-                new UniversalResponse<Product>(
+                new UniversalResponse<ProductDTO>(
                     errorInfo: ErrorMessages.UniversalMessages.NotFoundWithId(_entity, product.ProductId)));
         }
 
@@ -109,7 +109,7 @@ public class ProductController : ControllerBase
 
         AddSellerIfNull(product);
 
-        return Ok(new UniversalResponse<Product>(responseObject: product, info: SuccessMessages.UniversalResponse.Updated(_entity)));
+        return Ok(new UniversalResponse<ProductDTO>(responseObject: product.ToProductDto(), info: SuccessMessages.UniversalResponse.Updated(_entity)));
     }
 
     [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]
@@ -137,7 +137,7 @@ public class ProductController : ControllerBase
             AddSellerIfNull(product);
         }
 
-        return Ok(new UniversalResponse<List<Product>>(responseObject: products));
+        return Ok(new UniversalResponse<List<ProductDTO>>(responseObject: products.Select(p => p.ToProductDto()).ToList()));
     }
 
     private void AddSellerIfNull(Product product)

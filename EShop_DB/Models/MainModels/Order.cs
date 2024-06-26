@@ -10,8 +10,19 @@ public class Order
     [Display(Name = "Order id")] 
     public Guid OrderId { get; set; } = Guid.NewGuid();
 
-    [Display(Name = "Stage")] 
-    public OrderProcessingStage ProcessingStage { get; set; } 
+    [Display(Name = "Stage")]
+    public OrderProcessingStage? ProcessingStage
+    {
+        get
+        {
+            if (OrderEvents is null || OrderEvents.Count.Equals(0))
+            {
+                return null;
+            }
+
+            return OrderEvents.MaxBy(oe => oe.EventTime)?.Stage;
+        }
+    } 
     public Guid? AnonymousToken { get; set; }
 
     #region Constructors
@@ -35,8 +46,6 @@ public class Order
         {
             AnonymousToken = anonymousToken;
         }
-        
-        //OrderEvents.Add(new OrderEvent(OrderId));
     }
 
     #endregion
