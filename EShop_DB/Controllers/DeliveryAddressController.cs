@@ -1,5 +1,6 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Common.Extensions;
+using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using EShop_DB.Models.SecondaryModels;
@@ -13,11 +14,13 @@ namespace EShop_DB.Controllers;
 public class DeliveryAddressController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly string _entity = "Delivery address";
+    private readonly string _entity;
 
     public DeliveryAddressController(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+        
+        _entity = this.GetFormatedControllerName();
     }
 
     [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]

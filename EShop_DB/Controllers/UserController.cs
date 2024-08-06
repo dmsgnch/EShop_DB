@@ -1,9 +1,10 @@
+using System.Runtime.CompilerServices;
 using EShop_DB.Common.Constants;
 using EShop_DB.Common.Extensions;
+using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using EShop_DB.Models.MainModels;
 using SharedLibrary.Models.DtoModels.MainModels;
 using SharedLibrary.Responses;
@@ -15,11 +16,13 @@ namespace EShop_DB.Controllers;
 public class UserController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly string _entity = "User";
+    private readonly string _entity;
 
     public UserController(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+
+        _entity = this.GetControllerName();
     }
 
     [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]

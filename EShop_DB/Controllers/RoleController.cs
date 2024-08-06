@@ -1,5 +1,6 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Common.Extensions;
+using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using EShop_DB.Models.MainModels;
@@ -13,11 +14,13 @@ namespace EShop_DB.Controllers;
 public class RoleController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly string _entity = "Role";
+    private readonly string _entity;
 
     public RoleController(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+
+        _entity = this.GetControllerName();
     }
 
     [HttpGet, Route(ApiRoutesDb.UniversalActions.GetByIdAction)]

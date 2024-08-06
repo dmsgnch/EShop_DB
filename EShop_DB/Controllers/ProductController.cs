@@ -1,5 +1,6 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Common.Extensions;
+using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ namespace EShop_DB.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly string _entity = "Product";
+    private readonly string _entity;
 
     public ProductController(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+        
+        _entity = this.GetControllerName();
     }
 
     [HttpPost, Route(ApiRoutesDb.UniversalActions.CreateAction)]

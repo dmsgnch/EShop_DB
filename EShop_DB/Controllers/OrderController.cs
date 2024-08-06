@@ -1,5 +1,6 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Common.Extensions;
+using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,13 @@ public class OrderController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly string _entityCart = "Cart";
-    private readonly string _entity = "Order";
+    private readonly string _entity;
 
     public OrderController(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+        
+        _entity = this.GetControllerName();
     }
 
     [HttpPost, Route(ApiRoutesDb.OrderActions.CreateCartAction)]
