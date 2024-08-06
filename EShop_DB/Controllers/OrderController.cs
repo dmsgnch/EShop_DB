@@ -1,15 +1,12 @@
 using EShop_DB.Common.Constants;
 using EShop_DB.Common.Extensions;
-using EShop_DB.Components;
 using EShop_DB.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using EShop_DB.Models.MainModels;
 using EShop_DB.Models.SecondaryModels;
 using SharedLibrary.Models.Enums;
 using SharedLibrary.Models.DtoModels.MainModels;
-using SharedLibrary.Requests;
 using SharedLibrary.Responses;
 using SharedLibrary.Routes;
 
